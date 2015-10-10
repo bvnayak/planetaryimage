@@ -1,6 +1,7 @@
 from six import string_types
-from pvl import load as load_label
+from pvl import dump, dumps, load as load_label
 import numpy
+import math
 import os
 import gzip
 import bz2
@@ -92,6 +93,29 @@ class PlanetaryImage(object):
     def get_nested_dict(item, key_list):
         """Get value from nested dictionary using a key list. """
         return reduce(lambda x, y: x[y], key_list, item)
+
+    def save(self, file_to_write=None, overwrite=False):
+        if overwrite == True:
+            file_to_write = self.filename
+        serial_label = dumps(self.label)
+        label_sz = len(serial_label)
+        image_pointer = math.ceil(label_sz / self.label['RECORD_BYTES'])
+        self.label['^IMAGE'] = image_pointer + 1
+        diff = 0
+        if len(dumps(self.label)) != label_sz:
+            diff = label_sz - len(dumps(self.label))
+        dump(self.label, file_to_write)
+        offset = image_pointer * self.label['RECORD_BYTES'] - label_sz
+        stream = open(file_to_write, 'a')
+        for i in range(0, offset+diff):
+            stream.write(" ")
+        if self.bands > 1:
+            for i in range(0, self.bands):
+                data = self.data[:, :, i].byteswap()
+                data.tofile(stream, format='%i')
+        else:
+            self.data.tofile(stream, format='%i')
+        stream.close()
 
     def apply_scaling(self, copy=True):
         """Scale pixel values to there true DN.
@@ -292,7 +316,7 @@ class PlanetaryImage(object):
             data_stream.close()
 
     def _parse_band_sequential_data(self, stream):
-        if self.compression == 'none':
+        if self.compression == None:
             data = numpy.fromfile(stream, self.dtype, self.size)
         else:
             data = numpy.fromstring(stream.read(self.size*4), self.dtype)
