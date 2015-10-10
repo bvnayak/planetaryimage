@@ -95,7 +95,7 @@ class PlanetaryImage(object):
         return reduce(lambda x, y: x[y], key_list, item)
 
     def save(self, file_to_write=None, overwrite=False):
-        if overwrite == True:
+        if overwrite:
             file_to_write = self.filename
         serial_label = dumps(self.label)
         label_sz = len(serial_label)
@@ -316,7 +316,7 @@ class PlanetaryImage(object):
             data_stream.close()
 
     def _parse_band_sequential_data(self, stream):
-        if self.compression == None:
+        if self.compression is None:
             data = numpy.fromfile(stream, self.dtype, self.size)
         else:
             data = numpy.fromstring(stream.read(self.size*4), self.dtype)
