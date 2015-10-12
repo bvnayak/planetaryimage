@@ -1,7 +1,6 @@
 from six import string_types
 from pvl import dump, dumps, load as load_label
 import numpy
-import math
 import os
 import gzip
 import bz2
@@ -99,7 +98,7 @@ class PlanetaryImage(object):
             file_to_write = self.filename
         serial_label = dumps(self.label)
         label_sz = len(serial_label)
-        image_pointer = math.ceil(label_sz / self.label['RECORD_BYTES'])
+        image_pointer = int(label_sz / self.label['RECORD_BYTES']) + 1
         self.label['^IMAGE'] = image_pointer + 1
         diff = 0
         if len(dumps(self.label)) != label_sz:
