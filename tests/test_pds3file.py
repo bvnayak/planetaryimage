@@ -70,6 +70,42 @@ def test_bz2_pds3_1band_labels():
     assert image.compression == 'bz2'
 
 
+def test_image_save():
+    image = PDS3Image.open(filename)
+    image.save('Temp_Image.IMG')
+    new_image = PDS3Image.open('Temp_Image.IMG')
+    assert image.bands == new_image.bands
+    assert image.lines == new_image.lines
+    assert image.samples == new_image.samples
+    assert image.format == new_image.format
+    assert image.pixel_type == new_image.pixel_type
+    assert image.dtype == new_image.dtype
+    assert image.start_byte == new_image.start_byte
+    assert image.shape == new_image.shape
+    assert image.byte_order == new_image.byte_order
+    assert image.size == new_image.size
+
+
+def test_image_save_overwrite():
+    image = PDS3Image.open(filename)
+    image.save('Temp_Image.IMG')
+    image_temp = PDS3Image.open('Temp_Image.IMG')
+    image_temp.save(overwrite=True)
+    new_image = PDS3Image.open(image_temp.filename)
+    assert image_temp.filename == new_image.filename
+    assert image_temp.bands == new_image.bands
+    assert image_temp.lines == new_image.lines
+    assert image_temp.samples == new_image.samples
+    assert image_temp.format == new_image.format
+    assert image_temp.pixel_type == new_image.pixel_type
+    assert image_temp.dtype == new_image.dtype
+    assert image_temp.start_byte == new_image.start_byte
+    assert image_temp.shape == new_image.shape
+    assert image_temp.byte_order == new_image.byte_order
+    assert image_temp.size == new_image.size
+    os.remove('Temp_Image.IMG')
+
+
 def test_pds3_1band_image_format(pattern_data):
     image = PDS3Image.open(filename)
 
